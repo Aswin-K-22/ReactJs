@@ -13,7 +13,7 @@ import { AuthContext, FirebaseContext } from "../../store/Context";
 function Header() {
     const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const { logout } = useContext(FirebaseContext);
+  const { logout  } = useContext(FirebaseContext);
   return (
     <div className="headerParentDiv">
       <div className="headerChildDiv">

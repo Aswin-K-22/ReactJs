@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { FirebaseContext, AuthContext } from "../../store/Context";
 
 const Create = () => {
-  const { storage, db } = useContext(FirebaseContext);
+  const { createProduct  } = useContext(FirebaseContext);
   const { user } = useContext(AuthContext);
   const [fname, setFname] = useState("");
   const [category, setCategory] = useState("");
@@ -26,23 +26,24 @@ const Create = () => {
       return;
     }
 
+    setError(""); 
+
+
+    const productData = {
+      name: fname,
+      category,
+      price,
+      userId: user.uid,
+      createdAt: date.toDateString(),
+    };
+
+
     try {
-      const storageRef = storage.ref(`/images/${image.name}`);
-      const uploadTask = await storageRef.put(image);
-      const url = await uploadTask.ref.getDownloadURL();
-
-      const productData = {
-        name: fname,
-        category,
-        price,
-        url,
-        userId: user.uid,
-        createdAt: date.toDateString(),
-      };
-
-      await db.collection("products").add(productData);
+       await createProduct(productData, image);
       navigate("/");
     } catch (error) {
+      console.error('uploading is error = ' ,error.message)
+      console.log('---------------------------',error)
       setError("Error uploading the product: " + error.message);
     }
   };

@@ -5,7 +5,8 @@ import {
   signInWithEmailAndPassword, 
   signOut, 
   GoogleAuthProvider, 
-  signInWithPopup 
+  signInWithPopup ,
+  updateProfile
 } from 'firebase/auth';
 import { 
   addDoc, 
@@ -13,19 +14,22 @@ import {
   getFirestore 
 } from 'firebase/firestore';
 import { toast } from "react-toastify";
-import { getStorage } from "firebase/storage";
+import { getStorage   } from "firebase/storage";
 
 
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAMRUGCCFxkVC_6yGQkKUGuCJrcGB81Db8",
-    authDomain: "web-olx-clone.firebaseapp.com",
-    projectId: "web-olx-clone",
-    storageBucket: "web-olx-clone.firebasestorage.app",
-    messagingSenderId: "310207945533",
-    appId: "1:310207945533:web:6e974f4bafca4bffdb8354",
-    measurementId: "G-W3S0BJV7Y6"
-  };
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+};
+
+
+
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -33,20 +37,78 @@ const firebaseConfig = {
   const storage = getStorage(app);
   const googleProvider = new GoogleAuthProvider();
 
-  const signup = async (name, email, password) => {
+
+  const uploadImageToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "Olx-clone");
+    formData.append("folder", "Olx-products");
+  
+    const response = await fetch("https://api.cloudinary.com/v1_1/dckmi7m7y/image/upload", {
+      method: "POST",
+      body: formData,
+    });
+  
+    if (!response.ok) {
+      throw new Error("Image upload failed");
+    }
+  
+    const data = await response.json();
+    return data.secure_url; 
+  };
+
+  
+
+  const createProduct = async (productData, imageFile) => {
     try {
-      const response = await createUserWithEmailAndPassword(auth, email, password);
-      const user = response.user;
-      await addDoc(collection(db, 'user'), {
-        uid: user.uid,
-        name,
-        authProvider: 'local',
-        email,
+      const imageUrl = await uploadImageToCloudinary(imageFile);
+      const productsRef = collection(db, "products");
+      await addDoc(productsRef, {
+        ...productData,
+        imageUrl,
       });
-      toast.success("Signup successful!");
+      toast.success("Product added successfully!");
     } catch (error) {
-      console.log(error);
-      toast.error(error.code.split('/')[1].split('-').join(' '));
+      console.error("Error adding product:", error);
+      toast.error("Failed to add product: " + error.message);
+    }
+  };
+  
+  
+  
+  
+  
+  
+
+  const signup = async (name, email, password, phone) => {
+    try {
+      console.log(  'From firbase =' ,"Name:", name, "Email:", email, "Password:", password, "Phone:", phone);
+
+      const response = await createUserWithEmailAndPassword(auth, email, password);
+
+    const user = response.user;
+
+    await updateProfile(user, {
+      displayName: name,
+    });
+    await addDoc(collection(db, "user"), {
+      uid: user.uid,
+      name,
+      phone,
+      authProvider: "local",
+      email,
+    });
+
+    console.log("Document added to Firestore");
+    toast.success("Signup successful!");
+    } catch (error) {
+      console.error("Error during signup:", error);
+
+    const errorMessage = error.code
+      ? error.code.split('/')[1].split('-').join(' ')
+      : 'Unknown error';
+
+    toast.error(errorMessage);
     }
   };
 
@@ -55,8 +117,10 @@ const firebaseConfig = {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success("Login successful!");
     } catch (error) {
-      console.log(error);
-      toast.error(error.code.split('/')[1].split('-').join(' '));
+      console.error("Login failed:", error);
+    const errorMessage = error.code.replace("auth/", "").replace(/-/g, " ");
+    toast.error(`Error: ${errorMessage}`);
+    throw new Error(errorMessage); 
     }
   };
 
@@ -103,6 +167,6 @@ const logout = () => {
 };
 
 
-export {  auth, db, storage, googleProvider, signup, login, signupWithGoogle, logout };
+export {  auth, db, storage, googleProvider,  createProduct, signup, login, signupWithGoogle, logout };
 
 

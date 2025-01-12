@@ -1,4 +1,5 @@
 import  { useState, useEffect, useContext } from "react";
+import { collection, getDocs } from "firebase/firestore";
 
 import Heart from "../../assets/Heart";
 import "./Posts.css";
@@ -13,24 +14,27 @@ function Posts() {
   const { setPostDetails } = useContext(PostContext);
   const navigate = useNavigate();
 
+
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const snapshot = await db.collection("products").get();
-        const allPosts = snapshot.docs.map((product) => ({
-          ...product.data(),
-          id: product.id,
+        const productsCollection = collection(db, "products");
+        const snapshot = await getDocs(productsCollection);
+        const allPosts = snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
         }));
+        console.log("1 Fetched Product:", allPosts[0]);
         setProducts(allPosts);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
     };
-
+  
     fetchProducts();
   }, [db]);
-
-
+  
 
   return (
     <div className="postParentDiv">
@@ -53,7 +57,7 @@ function Posts() {
                 <Heart />
               </div>
               <div className="image">
-                <img src={product.url} alt="" />
+                <img src={product.imageUrl} alt="" />
               </div>
               <div className="content">
                 <p className="rate">&#x20B9; {product.price}</p>
@@ -85,7 +89,7 @@ function Posts() {
                 <Heart />
               </div>
               <div className="image">
-                <img src={product.url} alt="" />
+                <img src={product.imageUrl} alt="" />
               </div>
               <div className="content">
                 <p className="rate">&#x20B9; {product.price}</p>

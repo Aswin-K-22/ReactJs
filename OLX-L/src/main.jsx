@@ -13,6 +13,7 @@ import {
   login,
   signupWithGoogle,
   logout,
+  createProduct,
 } from "./firebase/config.js";
 import Context from './store/Context'
 
@@ -28,6 +29,7 @@ createRoot(document.getElementById('root')).render(
         login,
         signupWithGoogle,
         logout,
+        createProduct
       }}>
      <Context>
      <App />
