@@ -1,17 +1,16 @@
 import { Fragment, useContext, useState } from "react";
 import "./Create.css";
-import Header from "../Header/Header";
 import { useNavigate } from "react-router-dom";
 import { FirebaseContext, AuthContext } from "../../store/Context";
 
 const Create = () => {
-  const { createProduct  } = useContext(FirebaseContext);
+  const { createProduct } = useContext(FirebaseContext);
   const { user } = useContext(AuthContext);
   const [fname, setFname] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState(null);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const date = new Date();
 
@@ -20,14 +19,33 @@ const Create = () => {
     setImage(selectedImage);
   };
 
-  const handleSubmit = async () => {
-    if (!fname || !category || !price || !image) {
-      setError("Please fill in all fields and select an image.");
-      return;
+  const validateFields = () => {
+    const validationErrors = {};
+
+    if (!fname.trim()) {
+      validationErrors.fname = "Name is required.";
     }
 
-    setError(""); 
+    if (!category.trim()) {
+      validationErrors.category = "Category is required.";
+    }
 
+    if (!price.trim()) {
+      validationErrors.price = "Price is required.";
+    } else if (isNaN(price) || Number(price) <= 0) {
+      validationErrors.price = "Price must be a positive number.";
+    }
+
+    if (!image) {
+      validationErrors.image = "Please select an image.";
+    }
+
+    setErrors(validationErrors);
+    return Object.keys(validationErrors).length === 0; // Return true if no errors
+  };
+
+  const handleSubmit = async () => {
+    if (!validateFields()) return;
 
     const productData = {
       name: fname,
@@ -37,41 +55,36 @@ const Create = () => {
       createdAt: date.toDateString(),
     };
 
-
     try {
-       await createProduct(productData, image);
+      await createProduct(productData, image);
       navigate("/");
     } catch (error) {
-      console.error('uploading is error = ' ,error.message)
-      console.log('---------------------------',error)
-      setError("Error uploading the product: " + error.message);
+      console.error("Error uploading the product: ", error);
+      setErrors({ form: "Error uploading the product. Please try again." });
     }
   };
 
   return (
     <Fragment>
-      <Header />
-      <div className="centerDiv">
-        <h3>Add a Selling Item</h3>
-        <label htmlFor="fname">Name</label>
-        <br />
+      <div className="create-container">
+        <h3 className="create-title">Add a Selling Item</h3>
+
+        <label htmlFor="create-name" className="create-label">Name</label>
         <input
-          className="input"
+          className={`create-input ${errors.fname ? "create-input-error" : ""}`}
           type="text"
-          id="fname"
+          id="create-name"
           value={fname}
           onChange={(e) => setFname(e.target.value)}
-          name="Name"
         />
-        <br />
-        <label htmlFor="category">Category</label>
-        <br />
+        {errors.fname && <div className="create-error-message">{errors.fname}</div>}
+
+        <label htmlFor="create-category" className="create-label">Category</label>
         <input
-          className="input"
+          className={`create-input ${errors.category ? "create-input-error" : ""}`}
           type="text"
-          id="category"
+          id="create-category"
           value={category}
-          name="category"
           onChange={(e) => {
             const inputValue = e.target.value;
             if (!/\d/.test(inputValue)) {
@@ -79,42 +92,42 @@ const Create = () => {
             }
           }}
         />
-        <br />
-        <label htmlFor="price">Price</label>
-        <br />
+        {errors.category && <div className="create-error-message">{errors.category}</div>}
+
+        <label htmlFor="create-price" className="create-label">Price</label>
         <input
-          className="input"
+          className={`create-input ${errors.price ? "create-input-error" : ""}`}
           type="number"
-          id="price"
+          id="create-price"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          name="Price"
         />
-        <br />
-        <label htmlFor="image">Image</label>
-        <br />
-        <input onChange={handleImageChange} type="file" accept="image/*" />
+        {errors.price && <div className="create-error-message">{errors.price}</div>}
+
+        <label htmlFor="create-image" className="create-label">Image</label>
+        <input
+          className={`create-input ${errors.image ? "create-input-error" : ""}`}
+          type="file"
+          id="create-image"
+          accept="image/*"
+          onChange={handleImageChange}
+        />
+        {errors.image && <div className="create-error-message">{errors.image}</div>}
+
         {image && (
-          <div className="image-preview">
+          <div className="create-image-preview">
             <img
               src={URL.createObjectURL(image)}
               alt="Selected"
-              width="90px"
-              height="90px"
-              className="preview-image"
+              className="create-preview-image"
             />
           </div>
         )}
-        {!image && (
-          <div className="thumbnail-placeholder">
-            <span>No image selected</span>
-          </div>
-        )}
-        <div className="error-message">{error}</div>
-        <br />
-        <button onClick={handleSubmit} className="uploadBtn">
-          Upload and Submit
-        </button>
+        {!image && <div className="create-thumbnail-placeholder">No image selected</div>}
+
+        {errors.form && <div className="create-error-message create-form-error">{errors.form}</div>}
+
+        <button onClick={handleSubmit} className="create-upload-btn">Upload and Submit</button>
       </div>
     </Fragment>
   );

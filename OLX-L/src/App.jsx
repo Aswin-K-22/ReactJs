@@ -43,6 +43,8 @@ function App() {
               {user && <Route path="/create" element={<Create />} />}
               {user && <Route path="/view" element={<View />} />}
 
+              {!user && <Route path="/view" element={<Navigate to='/login'/>} />}
+
               {/* Shared Routes */}
               <Route path="/" element={<Home />} />
 

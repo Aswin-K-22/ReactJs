@@ -14,8 +14,6 @@ function Posts() {
   const { setPostDetails } = useContext(PostContext);
   const navigate = useNavigate();
 
-
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -31,13 +29,12 @@ function Posts() {
         console.error("Error fetching products:", error);
       }
     };
-  
+
     fetchProducts();
   }, [db]);
-  
 
   return (
-    <div className="postParentDiv">
+    <div className="posts-container">
       <div className="moreView">
         <div className="heading">
           <span>Quick Menu</span>
@@ -47,17 +44,17 @@ function Posts() {
           {products.map((product) => (
             <div
               className="card"
-              key={product.id} 
+              key={product.id}
               onClick={() => {
                 setPostDetails(product);
-                navigate("/view"); 
+                navigate("/view");
               }}
             >
               <div className="favorite">
                 <Heart />
               </div>
               <div className="image">
-                <img src={product.imageUrl} alt="" />
+                <img src={product.imageUrl} alt={product.name} />
               </div>
               <div className="content">
                 <p className="rate">&#x20B9; {product.price}</p>
@@ -79,17 +76,17 @@ function Posts() {
           {products.map((product) => (
             <div
               className="card"
-              key={product.id} 
+              key={product.id}
               onClick={() => {
                 setPostDetails(product);
-                navigate("/view"); 
+                navigate("/view");
               }}
             >
               <div className="favorite">
                 <Heart />
               </div>
               <div className="image">
-                <img src={product.imageUrl} alt="" />
+                <img src={product.imageUrl} alt={product.name} />
               </div>
               <div className="content">
                 <p className="rate">&#x20B9; {product.price}</p>
@@ -108,3 +105,5 @@ function Posts() {
 }
 
 export default Posts;
+
+

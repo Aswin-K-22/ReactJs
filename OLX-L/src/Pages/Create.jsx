@@ -3,10 +3,10 @@ import Create from '../Components/Create/Create'
 
 const CreatePage = () => {
   return (
-    <div>
+    <>
       <Header></Header>
       <Create></Create>
-    </div>
+      </>
   )
 }
 

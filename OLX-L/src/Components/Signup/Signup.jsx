@@ -1,5 +1,4 @@
-
-import  { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { FirebaseContext } from '../../store/Context';
 import { useNavigate } from 'react-router-dom';
 import './Signup.css';
@@ -8,113 +7,130 @@ export default function Signup() {
   const navigate = useNavigate();
   const { signup } = useContext(FirebaseContext);
 
-
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
 
-
-
   const validateFields = () => {
     const newErrors = {};
-    if (!username) newErrors.username = "Username is required";
-    if (!email) newErrors.email = "Email is required";
-    if (!phone) newErrors.phone = "Phone number is required";
-    if (!password) newErrors.password = "Password is required";
+    if (!username.trim()) newErrors.username = 'Username is required';
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Enter a valid email';
+    }
+    if (!phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(phone)) {
+      newErrors.phone = 'Enter a valid 10-digit phone number';
+    }
+    if (!password.trim()) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-
-
-const handleSignup = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     if (!validateFields()) return;
 
     try {
-      console.log( 'From signup page' ,"Name:", username, "Email:", email, "Password:", password, "Phone:", phone);
-
-      await signup(username, email, password ,phone);
-
-      navigate("/login");
+      console.log('Signup details:', { username, email, phone, password });
+      await signup(username, email, password, phone);
+      navigate('/login');
     } catch (error) {
-      console.error("Signup Error:", error);
-      if (error.code === "auth/email-already-in-use") {
-        setErrors((prev) => ({ ...prev, email: "Email is already in use" }));
-      } else if (error.code === "auth/weak-password") {
-        setErrors((prev) => ({ ...prev, password: "Weak password" }));
+      console.error('Signup Error:', error);
+      if (error.code === 'auth/email-already-in-use') {
+        setErrors((prev) => ({ ...prev, email: 'Email is already in use' }));
       } else {
-        console.log("Unhandled error:", error.message);
+        console.error('Unhandled error:', error.message);
       }
     }
   };
 
-
   return (
-<div>
-      <div className="signupParentDiv">
+    <div className="signup-container">
+      <div className="signup-card">
         <img
-          width="200px"
-          height="200px"
+          className="signup-logo"
           src="../../../Images/olx-logo.png"
           alt="OLX Logo"
         />
-        <form onSubmit={handleSignup}>
-          <label htmlFor="fname">Username</label>
-          <br />
-          <input
-            className="input"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            id="fname"
-            name="name"
-          />
-          {errors.username && <span className="error">{errors.username}</span>}
-          <br />
-          <label htmlFor="email">Email</label>
-          <br />
-          <input
-            className="input"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            id="email"
-            name="email"
-          />
-          {errors.email && <span className="error">{errors.email}</span>}
-          <br />
-          <label htmlFor="phone">Phone</label>
-          <br />
-          <input
-            className="input"
-            type="number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            id="phone"
-            name="phone"
-          />
-          {errors.phone && <span className="error">{errors.phone}</span>}
-          <br />
-          <label htmlFor="password">Password</label>
-          <br />
-          <input
-            className="input"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            id="password"
-            name="password"
-          />
-          {errors.password && <span className="error">{errors.password}</span>}
-          <br />
-          <br />
-          <button type="submit">Signup</button>
+        <form onSubmit={handleSignup} className="signup-form">
+          <div className="signup-form-group">
+            <label htmlFor="username" className="signup-label">
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              className="signup-input"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            {errors.username && (
+              <span className="signup-error">{errors.username}</span>
+            )}
+          </div>
+          <div className="signup-form-group">
+            <label htmlFor="email" className="signup-label">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              className="signup-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            {errors.email && <span className="signup-error">{errors.email}</span>}
+          </div>
+          <div className="signup-form-group">
+            <label htmlFor="phone" className="signup-label">
+              Phone
+            </label>
+            <input
+              id="phone"
+              type="text"
+              className="signup-input"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+            {errors.phone && <span className="signup-error">{errors.phone}</span>}
+          </div>
+          <div className="signup-form-group">
+            <label htmlFor="password" className="signup-label">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              className="signup-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {errors.password && (
+              <span className="signup-error">{errors.password}</span>
+            )}
+          </div>
+          <button type="submit" className="signup-button">
+            Signup
+          </button>
         </form>
-
-        <a onClick={() => navigate("/login")}>Login</a>
+        <div className="signup-footer">
+          <span>Already have an account?</span>
+          <a
+            className="signup-link"
+            onClick={() => navigate('/login')}
+          >
+            Login
+          </a>
+        </div>
       </div>
     </div>
   );

@@ -31,23 +31,28 @@ function View() {
 
   return (
     <div className="viewParentDiv">
-      <div className="imageShowDiv">
+      <div className="viewImageShowDiv">
         <img src={postDetails.imageUrl} alt="Post" />
       </div>
-      <div className="rightSection">
-        <div className="productDetails">
+      <div className="viewRightSection">
+        <div className="viewProductDetails">
           <p>&#x20B9; {postDetails.price}</p>
           <span>{postDetails.name}</span>
           <p>{postDetails.category}</p>
           <span>{postDetails.createdAt}</span>
         </div>
-        {userDetails && (
-          <div className="contactDetails">
+        {userDetails ? (
+          <div className="viewContactDetails">
             <p>Seller details</p>
             <p>{userDetails.name}</p>
             <p>{userDetails.phone}</p>
           </div>
-        )}
+        ) : (<div className="viewContactDetails">
+        <p>Seller details</p>
+        <p>Seller Name</p>
+        <p>Seller Phone number</p>
+      </div>
+    ) }
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ body {
   /* Set box sizing to include padding and border in width */
   * {
     box-sizing: border-box;
+  
   }
     
   /* Center elements horizontally and vertically */
